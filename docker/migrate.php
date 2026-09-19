@@ -66,6 +66,39 @@ if (!$mysqli->select_db($db)) {
     exit(1);
 }
 
+/* Heal the default admin account (idempotent, safe):
+   older dumps stored the seed password as PLAINTEXT, which
+   admin/login.php's password_verify() rejects. If the stored value is
+   not a real password hash, replace it with a bcrypt hash of the seed
+   password. A password an admin later CHANGED (valid hash) is never
+   overwritten. Default seed: admin@mediconnect.com / admin123. */
+$seedEmail = 'admin@mediconnect.com';
+$seedPass  = 'admin123';
+$adminId   = null;
+$storedPw  = null;
+if ($stmt = $mysqli->prepare("SELECT id, password FROM admins WHERE email = ?")) {
+    $stmt->bind_param('s', $seedEmail);
+    $stmt->execute();
+    $stmt->bind_result($adminId, $storedPw);
+    $stmt->fetch();
+    /* free + close the SELECT BEFORE the connection is reused,
+       otherwise the next query fails with "Commands out of sync". */
+    $stmt->free_result();
+    $stmt->close();
+}
+$isHash = is_string($storedPw)
+    && (strncmp($storedPw, '$2y$', 4) === 0 || strncmp($storedPw, '$argon2', 7) === 0);
+if ($adminId !== null && !$isHash) {
+    $newHash = password_hash($seedPass, PASSWORD_DEFAULT);
+    if ($upd = $mysqli->prepare("UPDATE admins SET password = ? WHERE id = ?")) {
+        $upd->bind_param('si', $newHash, $adminId);
+        if ($upd->execute()) {
+            echo "migrate: default admin password repaired (was plaintext).\n";
+        }
+        $upd->close();
+    }
+}
+
 $escDb  = $mysqli->real_escape_string($db);
 $tables = 0;
 if ($res = $mysqli->query("SELECT COUNT(*) AS n FROM information_schema.tables WHERE table_schema = '{$escDb}'")) {

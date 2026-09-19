@@ -144,7 +144,7 @@ VALUES (
 
     'admin@mediconnect.com',
 
-    'admin123'
+    '$2y$10$XeBQTksXyptahej85rPgLeD/87D1uxRcivdBPOIMnWpdMaibEg50K'
 
 );
 
