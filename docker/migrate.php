@@ -3,44 +3,37 @@
  * docker/migrate.php — idempotent schema bootstrap for deploy-time init.
  *
  * Runs from the container entrypoint (docker/startup.sh) before Apache starts.
- *   • Connects using the same env vars as config/database.php
- *     (MYSQL_URL, or MYSQLHOST/MYSQLPORT/MYSQLUSER/MYSQLPASSWORD/MYSQLDATABASE).
+ *   • Resolves the DB connection exactly like the app does
+ *     (config/database_env.php: MYSQL_URL / MYSQL_* env vars → XAMPP defaults).
  *   • Creates the database if it does not exist.
  *   • Imports database/database.sql ONLY when the database has no tables yet.
  *     The dump's `CREATE DATABASE` / `USE mediconnect` lines are stripped so
  *     it imports cleanly into whatever database name Railway provides.
+ *   • Never crashes the app: on any failure it exits 1 and startup.sh simply
+ *     skips the init and boots the web server anyway (see docker/startup.sh).
  *
  * Exit 0 = ready (imported or already present). Exit 1 = skipped/failed.
  */
 
-function mc_env(string $key, string $fallback): string {
-    $v = getenv($key);
-    return is_string($v) && $v !== '' ? $v : $fallback;
-}
+/* Return connection errors (no exceptions) so we can manage retries ourselves. */
+mysqli_report(MYSQLI_REPORT_OFF);
 
-$dbUrl = (string)(getenv('MYSQL_URL') ?: getenv('DATABASE_URL') ?: '');
-$host  = mc_env('MYSQLHOST', 'localhost');
-$user  = mc_env('MYSQLUSER', 'root');
-$pass  = mc_env('MYSQLPASSWORD', '');
-$db    = mc_env('MYSQLDATABASE', 'mediconnect');
-$port  = (int)mc_env('MYSQLPORT', '3306');
+require_once __DIR__ . '/../config/database_env.php';
 
-if ($dbUrl !== '') {
-    $u = parse_url($dbUrl);
-    if (is_array($u) && !empty($u['host'])) {
-        $host = (string)$u['host'];
-        $user = isset($u['user']) ? urldecode((string)$u['user']) : $user;
-        $pass = isset($u['pass']) ? urldecode((string)$u['pass']) : $pass;
-        $db   = isset($u['path']) ? trim((string)$u['path'], '/') : $db;
-        $port = isset($u['port']) ? (int)$u['port'] : $port;
-    }
-}
+$cfg  = mc_db_config();
+$host = $cfg['host'];
+$port = (int)$cfg['port'];
+$user = $cfg['user'];
+$pass = $cfg['pass'];
+$db   = $cfg['db'];
 
 echo "migrate: connecting to MySQL at {$host}:{$port} (db: {$db})\n";
 
-/* Wait up to ~60s for MySQL to accept connections (plugin provisioning). */
+/* Wait up to ~80s for MySQL to accept connections (plugin provisioning).
+   If the host is reachable but credentials are wrong it fails fast
+   instead of waiting the full window. */
 $mysqli = null;
-for ($i = 0; $i < 30; $i++) {
+for ($i = 0; $i < 40; $i++) {
     $mysqli = @new mysqli($host, $user, $pass, '', $port);
     if (!$mysqli->connect_errno) {
         break;

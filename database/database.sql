@@ -477,7 +477,7 @@ SELECT
 FROM user_notifications;
 -- =====================================================
 -- 8. NOTIFICATION TABLES + PHARMACY-MEDICINE PRICING
--- (added for Railway completeness — matches the live DB)
+-- (added for Railway completeness ï¿½ matches the live DB)
 -- =====================================================
 
 CREATE TABLE IF NOT EXISTS admin_notifications (

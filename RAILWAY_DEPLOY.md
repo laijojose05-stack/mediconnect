@@ -75,3 +75,29 @@ register a new user/use the demo data.
   medicines, so it's not required.
 - **Scale:** keep 1 replica of the app service (sessions use local files).
 - **Custom domain:** Settings → Networking → Custom Domain.
+
+## Troubleshooting
+
+**"Database Connection Failed" / `migrate.php` connecting to `localhost/root`**
+The container resolves the DB purely from env vars. Make sure the MySQL
+service is **linked to the app service** (or add the variables manually under
+**Variables**). Supported names (any of these, first match wins):
+
+| Group | Variable names |
+| --- | --- |
+| URL form | `MYSQL_URL`, `DATABASE_URL` → `mysql://user:pass@host:port/db` |
+| Individual | `MYSQLHOST` / `MYSQL_HOST`, `MYSQLPORT` / `MYSQL_PORT`, `MYSQLUSER` / `MYSQL_USER`, `MYSQLPASSWORD` / `MYSQL_PASSWORD`, `MYSQLDATABASE` / `MYSQL_DATABASE` |
+
+Migration is idempotent and never fatal: if the DB is unreachable at boot the
+web server still starts; fix the variables and redeploy (or restart) — the
+schema imports automatically on the next boot.
+
+**"More than one MPM loaded" (AH00534)**
+Fixed in the image build (only `mpm_prefork` remains enabled). If you see it
+again on a fresh deployment, redeploy — the `Dockerfile` disables `mpm_event`
+and `mpm_worker`.
+
+**Site loads but Railway reports the service unhealthy / 502**
+The container now listens on Railway's `$PORT` (default 80). If you previously
+added a `PORT` variable or a custom Health Check Path, confirm it points at a
+real route (e.g. `/` or `/index.php`).
