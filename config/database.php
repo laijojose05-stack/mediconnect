@@ -20,9 +20,14 @@ $password  = $mcDb['pass'];
 $database  = $mcDb['db'];
 $port      = (int)$mcDb['port'];
 
+/* PHP 8.1+ enables mysqli exceptions by default; turn them off and use
+   connect_error so a down DB renders the friendly error page instead of
+   throwing a raw fatal exception. */
+mysqli_report(MYSQLI_REPORT_OFF);
+
 $conn = @new mysqli($host, $username, $password, $database, $port);
 if ($conn->connect_error) {
-    die("Database Connection Failed: " . $conn->connect_error);
+    mc_db_error_page("Database Connection Failed: " . $conn->connect_error);
 }
 $conn->set_charset('utf8mb4');
 ?>

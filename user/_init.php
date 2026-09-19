@@ -24,7 +24,7 @@ try {
         ]
     );
 } catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+    mc_db_error_page("Database connection failed: " . $e->getMessage());
 }
 
 /* ---------- Helpers ---------- */

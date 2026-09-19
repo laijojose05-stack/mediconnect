@@ -34,20 +34,26 @@ echo "[startup] Apache Listen directives:"
 grep -E "^Listen" /etc/apache2/ports.conf
 
 # ---------------------------------------------------------------
-# Database bootstrap (idempotent; never fatal). The web server
-# starts even if the DB is not reachable yet — migration failure
-# only logs a warning and skips.
+# START APACHE FIRST — the service must be reachable immediately.
+# index.php is database-independent, so the landing page answers
+# (and the health check passes) even while MySQL is still offline.
+# ---------------------------------------------------------------
+
+# ---------------------------------------------------------------
+# Database bootstrap runs IN THE BACKGROUND and NEVER blocks the
+# web server. It is bounded: ~60s of retries inside migrate.php,
+# plus a hard 300s cap via `timeout`. If MySQL is not linked yet,
+# migration gives up quietly and Apache stays up. Pages that need
+# the DB show a clear "database unavailable" error, not a 502.
 # ---------------------------------------------------------------
 if [ -z "$MYSQL_DISABLE_INIT" ]; then
-  if php /var/www/html/docker/migrate.php; then
-    echo "[startup] Database is ready."
-  else
-    echo "[startup] Database init skipped (not fatal) — check MYSQL_URL / MYSQL_* env vars are linked to the app service."
-  fi
+  echo "[startup] Starting background database bootstrap (bounded, non-blocking)..."
+  ( timeout 300 php /var/www/html/docker/migrate.php \
+      || echo "[startup] Background DB init gave up (MySQL still unavailable). Web server is up; check that the MySQL service is linked and MYSQL_* / MYSQL_URL env vars are set." ) &
 fi
 
 # ---------------------------------------------------------------
-# Start Apache in the foreground. exec replaces the shell so
-# Apache becomes PID 1 and the container stays alive.
+# Run Apache in the foreground. exec replaces the shell so Apache
+# becomes PID 1 and the container stays alive.
 # ---------------------------------------------------------------
 exec apache2-foreground

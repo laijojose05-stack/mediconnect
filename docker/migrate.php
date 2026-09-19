@@ -27,13 +27,20 @@ $user = $cfg['user'];
 $pass = $cfg['pass'];
 $db   = $cfg['db'];
 
+$foundEnv = [];
+foreach (['MYSQL_URL','DATABASE_URL','MYSQLHOST','MYSQL_HOST','MYSQLPORT','MYSQL_PORT','MYSQLUSER','MYSQL_USER','MYSQLPASSWORD','MYSQL_PASSWORD','MYSQLDATABASE','MYSQL_DATABASE'] as $k) {
+    $v = getenv($k);
+    if (is_string($v) && $v !== '') $foundEnv[] = $k;
+}
+echo "migrate: env vars found: " . (count($foundEnv) ? implode(', ', $foundEnv) : 'NONE — using localhost defaults') . "\n";
 echo "migrate: connecting to MySQL at {$host}:{$port} (db: {$db})\n";
 
-/* Wait up to ~80s for MySQL to accept connections (plugin provisioning).
-   If the host is reachable but credentials are wrong it fails fast
-   instead of waiting the full window. */
+/* Bounded wait (~60s total). This runs in the BACKGROUND from startup.sh,
+   so the web server is already up — we only retry while the MySQL plugin
+   finishes provisioning. Never blocks startup: on timeout we give up and
+   let the app show a clear database error instead. */
 $mysqli = null;
-for ($i = 0; $i < 40; $i++) {
+for ($i = 0; $i < 30; $i++) {
     $mysqli = @new mysqli($host, $user, $pass, '', $port);
     if (!$mysqli->connect_errno) {
         break;
@@ -42,7 +49,9 @@ for ($i = 0; $i < 40; $i++) {
     sleep(2);
 }
 if (!$mysqli || $mysqli->connect_errno) {
-    fwrite(STDERR, "migrate: cannot connect to MySQL: " . ($mysqli ? $mysqli->connect_error : '') . "\n");
+    fwrite(STDERR, "migrate: giving up after ~60s — MySQL is unreachable. "
+        . ($mysqli ? $mysqli->connect_error : '') . "\n");
+    fwrite(STDERR, "migrate: the web server is already running; app pages that need the DB will show a database error.\n");
     exit(1);
 }
 

@@ -21,6 +21,14 @@
      $db = mc_db_config();   // -> ['host','port','user','pass','db']
 ============================================================ */
 
+/* Deterministic, bounded DB behavior for every consumer of this file:
+   - turn off mysqli exception mode so a down DB is handled via
+     ->connect_error instead of an uncaught fatal (PHP 8.1+ default),
+   - cap each connection attempt so a blackholed/unreachable host can
+     never stall startup for the default (~60s) per-attempt wait. */
+mysqli_report(MYSQLI_REPORT_OFF);
+ini_set('mysqli.connect_timeout', '5');
+
 function mc_env_first(array $names, ?string $fallback = null): ?string {
     foreach ($names as $name) {
         $v = getenv($name);
@@ -62,5 +70,25 @@ function mc_db_config(): array {
     $cfg['db']   = mc_env_first(['MYSQLDATABASE', 'MYSQL_DATABASE'], $cfg['db']);
 
     return $cfg;
+}
+
+/* Renders a friendly HTML "database unavailable" page (used when the DB
+   cannot be reached at request time). Never contains credentials. */
+function mc_db_error_page(string $message): void {
+    if (!headers_sent()) {
+        http_response_code(500);
+    }
+    $safe = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+    echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>MediConnect — Database unavailable</title></head>'
+       . '<body style="font-family:Segoe UI,Arial,sans-serif;background:#0f1319;color:#f5f7fa;margin:0;padding:48px 24px;text-align:center;">'
+       . '<div style="max-width:640px;margin:0 auto;">'
+       . '<h1 style="font-size:28px;">MediConnect — database unavailable</h1>'
+       . '<p style="color:#9aa7b4;">The web server is running, but the database could not be reached.</p>'
+       . '<p style="background:#1a212b;border:1px solid #2a3442;border-radius:8px;padding:14px;font-family:Consolas,monospace;font-size:13px;text-align:left;">' . $safe . '</p>'
+       . '<p style="font-size:13px;color:#9aa7b4;">If you are the developer: make sure the MySQL service is linked to this service and that '
+       . '<b>MYSQL_URL</b> (or <b>MYSQLHOST</b>, <b>MYSQLPORT</b>, <b>MYSQLUSER</b>, <b>MYSQLPASSWORD</b>, <b>MYSQLDATABASE</b>) environment '
+       . 'variables are set. On local XAMPP, no variables are needed.</p>'
+       . '</div></body></html>';
+    exit(1);
 }
 ?>
