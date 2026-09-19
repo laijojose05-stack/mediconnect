@@ -2,15 +2,16 @@
 /**
  * docker/migrate.php — idempotent schema bootstrap for deploy-time init.
  *
- * Runs from the container entrypoint (docker/startup.sh) before Apache starts.
+ * Launched by docker/startup.sh as a BACKGROUND task AFTER Apache is up,
+ * so it can never block the web server.
  *   • Resolves the DB connection exactly like the app does
  *     (config/database_env.php: MYSQL_URL / MYSQL_* env vars → XAMPP defaults).
  *   • Creates the database if it does not exist.
  *   • Imports database/database.sql ONLY when the database has no tables yet.
  *     The dump's `CREATE DATABASE` / `USE mediconnect` lines are stripped so
  *     it imports cleanly into whatever database name Railway provides.
- *   • Never crashes the app: on any failure it exits 1 and startup.sh simply
- *     skips the init and boots the web server anyway (see docker/startup.sh).
+ *   • Never blocks the app: on any failure it exits 1 after a bounded retry
+ *     window while Apache keeps serving (see docker/startup.sh).
  *
  * Exit 0 = ready (imported or already present). Exit 1 = skipped/failed.
  */
