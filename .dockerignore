@@ -1,0 +1,11 @@
+.git
+.gitignore
+.vscode
+.idea
+*.log
+Thumbs.db
+desktop.ini
+.DS_Store
+user/uploads/
+config/ai_config.local.php
+scripts/.openfda.key

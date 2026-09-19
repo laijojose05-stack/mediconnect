@@ -1,0 +1,71 @@
+C:\xampp\htdocs\MediConnect\
+│
+├── index.php
+├── login.php
+├── logout.php
+│
+├── config\
+│   └── database.php
+│
+├── includes\
+│   ├── header.php
+│   ├── footer.php
+│   ├── navbar.php
+│   ├── auth.php
+│   └── functions.php
+│
+├── assets\
+│   │
+│   ├── css\
+│   │   ├── style.css
+│   │   ├── user.css
+│   │   ├── hospital.css
+│   │   ├── pharmacy.css
+│   │   └── admin.css
+│   │
+│   ├── js\
+│   │   └── script.js
+│   │
+│   └── images\
+│       ├── logo.png
+│       └── uploads\
+│
+├── user\
+│   ├── login.php
+│   ├── register.php
+│   ├── dashboard.php
+│   ├── search_medicine.php
+│   ├── medicine_details.php
+│   ├── search_hospital.php
+│   ├── hospital_details.php
+│   ├── chatbot.php
+│   └── profile.php
+│
+├── hospital\
+│   ├── login.php
+│   ├── dashboard.php
+│   ├── profile.php
+│   ├── doctors.php
+│   ├── departments.php
+│   ├── facilities.php
+│   └── appointments.php
+│
+├── pharmacy\
+│   ├── login.php
+│   ├── dashboard.php
+│   ├── profile.php
+│   ├── medicines.php
+│   ├── inventory.php
+│   └── requests.php
+│
+├── admin\
+│   ├── login.php
+│   ├── dashboard.php
+│   ├── users.php
+│   ├── hospitals.php
+│   ├── pharmacies.php
+│   ├── medicines.php
+│   └── reports.php
+│
+└── database\
+    └── mediconnect.sql

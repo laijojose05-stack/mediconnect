@@ -1,0 +1,21 @@
+# ---- Secrets (never commit these) ----
+config/ai_config.local.php
+scripts/.openfda.key
+
+# ---- Patient data ----
+user/uploads/
+
+# ---- Local config / environment ----
+*.log
+.env
+.env.*
+
+# ---- Editor / OS junk ----
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ---- Windows built-in ----
+*.tmp
