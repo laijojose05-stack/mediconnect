@@ -12,8 +12,8 @@ FROM php:8.2-apache
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libcurl4-openssl-dev libonig-dev default-mysql-client \
     && docker-php-ext-install mysqli pdo_mysql curl mbstring \
-    && a2dismod mpm_event 2>/dev/null || true \
-    && a2dismod mpm_worker 2>/dev/null || true \
+    && (a2dismod -f mpm_event 2>/dev/null || true) \
+    && (a2dismod -f mpm_worker 2>/dev/null || true) \
     && a2enmod mpm_prefork rewrite \
     && rm -rf /var/lib/apt/lists/*
 

@@ -4,21 +4,37 @@ set -e
 echo "[startup] MediConnect container starting..."
 
 # ---------------------------------------------------------------
-# Port: Railway injects $PORT for its proxy (commonly 8080). To be
-# reachable no matter which port Railway probes, Apache listens on
-# BOTH the classic 80 AND $PORT (deduplicated when they are equal).
-# "Listen" binds all interfaces (0.0.0.0) by default.
+# PORT: Railway injects $PORT for its proxy (commonly 8080). We
+# listen on BOTH the classic 80 AND $PORT so the app is reachable
+# no matter which port Railway probes. ports.conf is REWRITTEN
+# from scratch on every boot (never patched), so restarts can't
+# accumulate duplicate "Listen" lines. "Listen" binds all
+# interfaces (0.0.0.0) by default.
 # ---------------------------------------------------------------
 PORT="${PORT:-80}"
 
 if [ "$PORT" = "80" ]; then
-    sed -i "s/^Listen 80$/Listen 80/" /etc/apache2/ports.conf
+    printf 'Listen 80\n' > /etc/apache2/ports.conf
 else
-    sed -i "s/^Listen 80$/Listen 80\nListen ${PORT}/" /etc/apache2/ports.conf
+    printf 'Listen 80\nListen %s\n' "$PORT" > /etc/apache2/ports.conf
 fi
 
-# Match the site on any port (80 and $PORT both serve the app).
-sed -i "s/<VirtualHost \*:80>/<VirtualHost *:*>/" /etc/apache2/sites-enabled/000-default.conf
+# Single site, reachable on ANY port (Railway forwards to $PORT,
+# the health probe may use 80). Rewritten deterministically so no
+# stale virtual-host file can ever survive a restart.
+cat > /etc/apache2/sites-enabled/000-default.conf <<'EOF'
+<VirtualHost *:*>
+    ServerAdmin webmaster@localhost
+    DocumentRoot /var/www/html
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+    <Directory /var/www/html>
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+</VirtualHost>
+EOF
 
 # "/" must resolve to the PHP entry point.
 if ! grep -q "^DirectoryIndex" /etc/apache2/apache2.conf; then
@@ -30,21 +46,40 @@ if ! grep -q "^ServerName" /etc/apache2/apache2.conf; then
     echo "ServerName localhost" >> /etc/apache2/apache2.conf
 fi
 
-echo "[startup] Apache Listen directives:"
-grep -E "^Listen" /etc/apache2/ports.conf
+# ---------------------------------------------------------------
+# EXACTLY ONE MPM. Apache refuses to start when more than one MPM
+# module is loaded (AH00534). We remove EVERY mpm_* load file from
+# mods-enabled — even ones dropped in as plain files or without
+# mods-available entries — then enable ONLY mpm_prefork, which
+# mod_php requires. Nothing else is modified.
+# ---------------------------------------------------------------
+echo "[startup] MPM .load files before fix:"
+ls /etc/apache2/mods-enabled/ | grep '^mpm_' || echo "  (none)"
+
+rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf
+a2enmod mpm_prefork >/dev/null 2>&1 || true
+
+echo "[startup] MPM .load files after fix (must be mpm_prefork only):"
+ls /etc/apache2/mods-enabled/ | grep '^mpm_' || echo "  (none)"
 
 # ---------------------------------------------------------------
-# START APACHE FIRST — the service must be reachable immediately.
-# index.php is database-independent, so the landing page answers
-# (and the health check passes) even while MySQL is still offline.
+# Validate the final configuration BEFORE serving. If Apache would
+# refuse to start for ANY reason, stop here and print the exact
+# error so the Railway logs show the cause instead of a silent 502.
 # ---------------------------------------------------------------
+echo "[startup] Apache listen directives:"
+cat /etc/apache2/ports.conf
+
+if ! apache2ctl -t 2>&1; then
+    echo "[startup] FATAL: Apache configuration invalid (see errors above). Exiting." >&2
+    exit 1
+fi
 
 # ---------------------------------------------------------------
-# Database bootstrap runs IN THE BACKGROUND and NEVER blocks the
-# web server. It is bounded: ~60s of retries inside migrate.php,
-# plus a hard 300s cap via `timeout`. If MySQL is not linked yet,
-# migration gives up quietly and Apache stays up. Pages that need
-# the DB show a clear "database unavailable" error, not a 502.
+# Database bootstrap (unchanged — working): runs IN THE BACKGROUND
+# and never blocks the web server. Bounded retries inside
+# migrate.php plus a hard 300s cap via `timeout`. MySQL config is
+# untouched: env vars resolve via config/database_env.php.
 # ---------------------------------------------------------------
 if [ -z "$MYSQL_DISABLE_INIT" ]; then
   echo "[startup] Starting background database bootstrap (bounded, non-blocking)..."
@@ -53,7 +88,7 @@ if [ -z "$MYSQL_DISABLE_INIT" ]; then
 fi
 
 # ---------------------------------------------------------------
-# Run Apache in the foreground. exec replaces the shell so Apache
+# Start Apache in the foreground. exec replaces the shell so Apache
 # becomes PID 1 and the container stays alive.
 # ---------------------------------------------------------------
 exec apache2-foreground
