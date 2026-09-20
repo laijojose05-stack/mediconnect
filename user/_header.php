@@ -29,7 +29,6 @@ $nav = [
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= ($pageTitle ?? 'MediConnect') ?> | MediConnect</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<link rel="stylesheet" href="chatbot.css">
 <style>
 :root{
 --bg:#0f1319; --surface:#171c26; --surface-2:#212836; --border:#262d3d;

@@ -38,7 +38,6 @@ C:\xampp\htdocs\MediConnect\
 │   ├── medicine_details.php
 │   ├── search_hospital.php
 │   ├── hospital_details.php
-│   ├── chatbot.php
 │   └── profile.php
 │
 ├── hospital\

@@ -1,5 +1,4 @@
 # ---- Secrets (never commit these) ----
-config/ai_config.local.php
 scripts/.openfda.key
 
 # ---- Patient data ----

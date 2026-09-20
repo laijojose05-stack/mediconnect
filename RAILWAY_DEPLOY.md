@@ -16,7 +16,7 @@ on first boot.
 # in the project folder (C:\xampp\htdocs\mediconnect)
 git init
 git add .
-git commit -m "MediConnect: rule-based chatbot + generative AI layer, deployable to Railway"
+git commit -m "MediConnect: deployable to Railway"
 
 # create the repo on github.com first (New repository), then:
 git remote add origin https://github.com/YOUR_USERNAME/mediconnect.git
@@ -24,8 +24,8 @@ git push -u origin main
 ```
 
 > 🔒 **Secrets are already protected** — `.gitignore` blocks
-> `config/ai_config.local.php` (Gemini key) and `scripts/.openfda.key`, and
-> `config/ai_config.php` + `config/database.php` are now env-var driven with no
+> `scripts/.openfda.key`, and
+> `config/database.php` is env-var driven with no
 > secrets inside. Verify with `git status` before pushing.
 
 ## 2. Create the Railway project
@@ -44,13 +44,7 @@ git push -u origin main
    `MYSQLDATABASE` (and `MYSQL_URL`) into the app automatically. No manual
    wiring needed.
 
-## 4. Set the AI key
-
-1. Open the app service → **Variables**.
-2. Add `AI_API_KEY` = your Gemini key (from <https://aistudio.google.com/apikey>).
-   Optional: `AI_MODEL` (default `gemini-3.6-flash`).
-
-## 5. Start it up
+## 4. Start it up
 
 1. Deploy (or Railway redeploys on push).
 2. On first boot, `docker/startup.sh` waits for MySQL and imports the schema
