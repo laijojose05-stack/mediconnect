@@ -33,6 +33,19 @@ cat > /etc/apache2/sites-enabled/000-default.conf <<'EOF'
         AllowOverride None
         Require all granted
     </Directory>
+    ErrorDocument 400 /error.php?code=400
+    ErrorDocument 401 /error.php?code=401
+    ErrorDocument 402 /error.php?code=402
+    ErrorDocument 403 /error.php?code=403
+    ErrorDocument 404 /error.php?code=404
+    ErrorDocument 405 /error.php?code=405
+    ErrorDocument 408 /error.php?code=408
+    ErrorDocument 410 /error.php?code=410
+    ErrorDocument 429 /error.php?code=429
+    ErrorDocument 500 /error.php?code=500
+    ErrorDocument 502 /error.php?code=502
+    ErrorDocument 503 /error.php?code=503
+    ErrorDocument 504 /error.php?code=504
 </VirtualHost>
 EOF
 
