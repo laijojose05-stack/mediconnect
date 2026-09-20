@@ -76,9 +76,9 @@ footer{border-top:1px solid #202733;padding:55px 0 25px;background:#0c1016}.foot
 <div class="info-card">
 <h2>Contact MediConnect</h2>
 <p>Use the details below or send us a message through the contact form.</p>
-<div class="info-item"><strong>✉ Email</strong><span>support@mediconnect.com</span></div>
-<div class="info-item"><strong>📞 Phone</strong><span>+91 00000 00000</span></div>
-<div class="info-item"><strong>📍 Location</strong><span>Kerala, India</span></div>
+<div class="info-item"><strong>✉ Email</strong><span>laijojose05@gmail.com</span></div>
+<div class="info-item"><strong>📞 Phone</strong><span>+91 85907 75834</span></div>
+<div class="info-item"><strong>📍 Location</strong><span>East Kallada, Kollam, Kerala, India</span></div>
 <div class="info-item"><strong>⏱ Support</strong><span>We aim to respond as soon as possible.</span></div>
 </div>
 
