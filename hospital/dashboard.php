@@ -287,7 +287,6 @@ border-color:#1d8cf8;
 
 @media(max-width:900px){
 .side-grid{grid-template-columns:1fr;}
-}
 
 .sidebar{
 width:200px;
@@ -306,7 +305,6 @@ margin-left:200px;
 .cards{
 grid-template-columns:1fr 1fr;
 }
-
 }
 
 @media(max-width:600px){
