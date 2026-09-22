@@ -29,6 +29,7 @@ if ($res) $cities = array_column($res->fetch_all(MYSQLI_ASSOC), 'city');
 
 $pageTitle = 'Pharmacies';
 include '_header.php';
+require_once __DIR__ . '/../partials/_map.php';
 ?>
 
 <div class="page-head">
@@ -98,6 +99,14 @@ include '_header.php';
         </div>
 
         <a class="btn primary" href="catalogue.php?pharmacy=<?= (int)$p['id'] ?>">💊 Browse Their Medicines</a>
+
+        <?= mc_map_block([
+            'name'    => $p['pharmacy_name'],
+            'address' => $p['address'] ?? '',
+            'city'    => $p['city'] ?? '',
+            'lat'     => $p['latitude']  ?? '',
+            'lng'     => $p['longitude'] ?? '',
+        ]) ?>
 
       </div>
     </details>

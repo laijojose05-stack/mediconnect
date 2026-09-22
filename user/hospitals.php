@@ -41,6 +41,7 @@ if ($open) {
 
 $pageTitle = 'Hospitals';
 include '_header.php';
+require_once __DIR__ . '/../partials/_map.php';
 ?>
 
 <div class="page-head">
@@ -109,6 +110,14 @@ include '_header.php';
           <a class="btn primary" href="book_appointment.php?hospital_id=<?= (int)$h['id'] ?>">📅 Book Appointment</a>
           <a class="btn" href="doctors.php?hospital_id=<?= (int)$h['id'] ?>">👨‍⚕️ View Doctors</a>
         </div>
+
+        <?= mc_map_block([
+            'name'    => $h['hospital_name'],
+            'address' => $h['address'] ?? '',
+            'city'    => $h['city'] ?? '',
+            'lat'     => $h['latitude']  ?? '',
+            'lng'     => $h['longitude'] ?? '',
+        ]) ?>
 
         <?php if ($isOpen): ?>
           <hr>
