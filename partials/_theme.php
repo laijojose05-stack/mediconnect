@@ -2,6 +2,9 @@
 /* Shared theme toggle: dark (default) + light. Injected into <head> on hospital pages. */
 ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script>
 try{ var mcnTheme = localStorage.getItem("mcn-theme"); if(mcnTheme){ document.documentElement.setAttribute("data-theme", mcnTheme); } }catch(e){}
 </script>
@@ -596,6 +599,126 @@ img{max-width:100%;height:auto;}
 }
 
 /* =============================
+   CLEAN MINIMAL DESIGN SYSTEM
+   Shared tokens + one consistent component style for all modules
+============================= */
+
+:root{
+    --mcn-bg:#0f1319;
+    --mcn-surface:#171c26;
+    --mcn-surface-2:#212836;
+    --mcn-primary:#1d8cf8;
+    --mcn-primary-soft:rgba(29,140,248,.12);
+    --mcn-border:#262d3d;
+    --mcn-text:#e6edf3;
+    --mcn-muted:#8b95a5;
+    --mcn-warning:#f0c15a;
+    --mcn-radius:14px;
+}
+
+html[data-theme="light"]{
+    --mcn-bg:#eef2f7;
+    --mcn-surface:#ffffff;
+    --mcn-surface-2:#f1f5fa;
+    --mcn-primary-soft:rgba(29,140,248,.10);
+    --mcn-border:#e4e9f1;
+    --mcn-text:#1c2430;
+    --mcn-muted:#7a8699;
+}
+
+*{font-family:'Inter',Arial,'Plus Jakarta Sans',sans-serif;}
+body{font-family:'Inter',Arial,'Plus Jakarta Sans',sans-serif;}
+
+/* Cards — one consistent system across desktop + mobile */
+.card,.stat,.stat-card{
+    background:var(--mcn-surface);
+    border:1px solid var(--mcn-border);
+    border-radius:var(--mcn-radius);
+    box-shadow:0 1px 2px rgba(0,0,0,.18);
+}
+.card{padding:24px;}
+.stat,.stat-card{padding:20px 22px;position:relative;}
+.stat p,.stat-card p{color:var(--mcn-muted);font-size:13px;margin-bottom:8px;}
+.stat h2{font-size:30px;letter-spacing:-.4px;}
+.stat.warn h2{color:var(--mcn-warning);}
+.stat>.bi{
+    position:absolute;top:16px;right:18px;width:38px;height:38px;
+    border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-size:17px;color:var(--mcn-primary);background:var(--mcn-primary-soft);
+}
+.stat-card h2{font-size:30px;color:var(--mcn-primary);letter-spacing:-.5px;margin-top:16px;}
+.stat-icon,.activity-icon,.c-icon,.acc-icon{
+    background:var(--mcn-primary-soft);
+    color:var(--mcn-primary);
+    border-radius:10px;
+}
+.stat-icon i,.activity-icon i,.c-icon i,.acc-icon i{color:var(--mcn-primary);font-style:normal;}
+
+/* Headers — clean + consistent */
+.header,.page-header,.page-head{
+    display:flex;justify-content:space-between;align-items:center;
+    gap:16px;flex-wrap:wrap;margin-bottom:26px;
+}
+.header h1,.page-header h1,.page-head h1{font-size:26px;font-weight:700;letter-spacing:-.3px;margin:0;}
+.header p,.page-header .subtitle,.page-head .subtitle{color:var(--mcn-muted);font-size:14px;margin-top:5px;}
+
+/* Sidebar — minimal, icon + label, clear active state */
+.sidebar a,.sidebar .menu a,.sidebar a.nav-link{
+    display:flex;align-items:center;gap:12px;font-size:14px;line-height:1.3;
+    transition:background .15s,color .15s;
+}
+.sidebar a i,.sidebar .menu a i,.sidebar a.nav-link i{
+    width:20px;text-align:center;font-size:16px;flex-shrink:0;color:#6b7a90;
+}
+.sidebar a:hover i,.sidebar a.active i{color:var(--mcn-primary);}
+.sidebar a.active{font-weight:600;}
+
+/* Buttons — consistent */
+.btn{border-radius:10px;font-size:13px;font-weight:600;}
+.right-btn{border-radius:12px;}
+.right-btn,.page-head .btn,.page-header .btn,.header .btn{
+    display:inline-flex;align-items:center;gap:8px;
+}
+.right-btn i,.page-head .btn i,.page-header .btn i,.header .btn i{
+    font-size:15px;line-height:1;
+}
+
+/* Card titles */
+.card-title h3,.card h5{font-size:16px;font-weight:600;}
+
+/* Lists */
+.row-item{padding:13px 4px;gap:12px;}
+.row-item .small{font-size:12px;color:var(--mcn-muted);}
+
+/* Stat grids — equal width rows on laptop, 2-col tablet, single mobile */
+@media(min-width:1025px){
+    .stats,.cards{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));}
+}
+@media(min-width:769px) and (max-width:1024px){
+    .stats,.cards{grid-template-columns:repeat(2,1fr);}
+}
+
+@media(min-width:769px) and (max-width:1024px){
+    .sidebar{width:210px;padding-left:14px;padding-right:14px;}
+    .sidebar ~ .main{margin-left:210px;}
+    .sidebar ~ .content{margin-left:210px;}
+    .sidebar ~ .main-content{padding:28px 24px;}
+}
+
+@media(min-width:1025px){
+    .sidebar{width:250px;}
+    .sidebar ~ .main{margin-left:250px;}
+    .sidebar ~ .content{margin-left:250px;}
+    .sidebar ~ .main-content{padding:36px 40px;}
+}
+
+@media(max-width:768px){
+    .stat>.bi{width:30px;height:30px;font-size:15px;top:14px;right:14px;}
+}
+
+:where(button,a):focus-visible{outline:2px solid var(--mcn-primary);outline-offset:2px;}
+
+/* =============================
    MOBILE-FIRST DASHBOARD
    (bottom navigation replaces sidebar on phones)
 ============================= */
@@ -630,7 +753,8 @@ img{max-width:100%;height:auto;}
     .right-btn{flex:1;justify-content:center;padding:11px 8px;font-size:13px;}
 
     /* Responsive cards */
-    .stats,.cards{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;}
+    .stats,.cards{grid-template-columns:repeat(2,1fr);gap:14px;}
+    .stats>*:last-child:nth-child(3),.cards>*:last-child:nth-child(3){grid-column:1/-1;}
     .stat,.card{padding:16px;}
     .stat h2{font-size:26px;}
     .grid-2,.grid-3,.side-grid{grid-template-columns:1fr!important;}
@@ -896,6 +1020,141 @@ img{max-width:100%;height:auto;}
     }
     if(document.readyState !== "loading"){ initBottomNav(); }
     else { document.addEventListener("DOMContentLoaded", initBottomNav); }
+})();
+
+/* Replace emoji on desktop with tidy Bootstrap icons (same visual language as mobile) */
+(function(){
+    function stripEmoji(s){
+        return (s || "").replace(/\p{Extended_Pictographic}/gu, "").replace(/\s+/g, " ").trim();
+    }
+    function fileIcon(href){
+        var f = (href || "").split("/").pop().split("?")[0];
+        var map = {
+            "dashboard.php":"bi-grid-1x2-fill",
+            "doctors.php":"bi-person-heart",
+            "departments.php":"bi-building",
+            "appointments.php":"bi-calendar2-check",
+            "availability.php":"bi-clock-history",
+            "logout.php":"bi-box-arrow-right",
+            "users.php":"bi-people-fill",
+            "hospitals.php":"bi-hospital",
+            "pharmacies.php":"bi-shop",
+            "medicines.php":"bi-capsule",
+            "reports.php":"bi-bar-chart-line",
+            "my_requests.php":"bi-inbox",
+            "catalogue.php":"bi-capsule",
+            "stock.php":"bi-box-seam",
+            "stock_edit.php":"bi-clipboard",
+            "requests.php":"bi-inbox",
+            "request_medicine.php":"bi-capsule",
+            "book_appointment.php":"bi-calendar-plus",
+            "profile.php":"bi-person-circle"
+        };
+        return "bi " + (map[f] || "bi-circle");
+    }
+    function labelIcon(label){
+        var l = (label || "").toLowerCase();
+        if(/appointment/.test(l)){ return "bi-calendar2-check"; }
+        if(/medicine/.test(l)){ return "bi-capsule"; }
+        if(/request/.test(l)){ return "bi-inbox"; }
+        if(/notif/.test(l)){ return "bi-bell"; }
+        if(/pending/.test(l)){ return "bi-hourglass-split"; }
+        if(/user/.test(l)){ return "bi-people-fill"; }
+        if(/hospital/.test(l)){ return "bi-hospital"; }
+        if(/pharmacy/.test(l)){ return "bi-shop"; }
+        if(/doctor/.test(l)){ return "bi-person-heart"; }
+        if(/department/.test(l)){ return "bi-building"; }
+        if(/stock/.test(l)){ return "bi-box-seam"; }
+        if(/patient/.test(l)){ return "bi-people"; }
+        if(/accepted|ready/.test(l)){ return "bi-check2-circle"; }
+        if(/report/.test(l)){ return "bi-bar-chart-line"; }
+        if(/total/.test(l)){ return "bi-award"; }
+        return null;
+    }
+    function addIcon(el, cls, prepend){
+        var i = document.createElement("i");
+        i.className = cls;
+        i.setAttribute("aria-hidden", "true");
+        if(prepend){ el.insertBefore(i, el.firstChild); } else { el.appendChild(i); }
+    }
+    function badgeIcon(text){
+        var t = (text || "").trim();
+        if(t.indexOf("🔔") === 0){ return "bi-bell"; }
+        if(t.indexOf("👤") === 0){ return "bi-person"; }
+        return null;
+    }
+    function emojiIcon(text){
+        var t = (text || "").trim();
+        var map = {
+            "👥":"bi-people-fill",
+            "🏥":"bi-hospital",
+            "💊":"bi-capsule",
+            "💉":"bi-capsule",
+            "🏪":"bi-shop",
+            "👨‍⚕️":"bi-person-heart",
+            "🩺":"bi-heart-pulse",
+            "📊":"bi-grid-1x2-fill",
+            "🏛️":"bi-building",
+            "📅":"bi-calendar2-check",
+            "⏰":"bi-clock-history",
+            "🚪":"bi-box-arrow-right",
+            "🔔":"bi-bell",
+            "👤":"bi-person",
+            "📦":"bi-box-seam",
+            "✅":"bi-check2-circle"
+        };
+        for(var k in map){
+            if(t.indexOf(k) === 0){ return map[k]; }
+        }
+        return null;
+    }
+    function decorate(){
+        // Sidebar links: icon + clean text
+        document.querySelectorAll(".sidebar a[href]").forEach(function(a){
+            if(a.getAttribute("data-mcn-ic") || a.querySelector("img")){ return; }
+            a.setAttribute("data-mcn-ic", "1");
+            var ic = fileIcon(a.getAttribute("href"));
+            addIcon(a, ic, true);
+            var text = a.textContent.replace(/^\s+/, "");
+            if(a.lastChild && a.lastChild.nodeType === 3 && /\p{Extended_Pictographic}/u.test(text)){
+                a.lastChild.nodeValue = stripEmoji(text);
+            }
+        });
+        // Stat cards without a dedicated icon box: chip in the corner
+        document.querySelectorAll(".stat").forEach(function(s){
+            if(s.getAttribute("data-mcn-ic") || s.querySelector(".stat-icon") || s.querySelector("> .bi")){ return; }
+            var label = (s.querySelector("p") || {}).textContent || "";
+            var cls = labelIcon(label);
+            if(cls){ s.setAttribute("data-mcn-ic", "1"); addIcon(s, cls); }
+        });
+        // Icon boxes holding an emoji: swap to icon
+        document.querySelectorAll(".stat-icon, .activity-icon, .c-icon, .acc-icon, .doc-avatar, .doc-card-avatar, .card-icon").forEach(function(b){
+            if(b.getAttribute("data-mcn-ic")){ return; }
+            var t = (b.textContent || "").trim();
+            var cls = emojiIcon(t) || labelIcon(t) || badgeIcon(t);
+            if(cls){
+                b.setAttribute("data-mcn-ic", "1");
+                b.textContent = "";
+                var i = document.createElement("i");
+                i.className = cls;
+                i.setAttribute("aria-hidden", "true");
+                b.appendChild(i);
+            }
+        });
+        // Header buttons with an emoji (Profile / Notifications / etc.)
+        document.querySelectorAll(".right-btn, .page-head .btn, .page-header .btn, .header .btn").forEach(function(b){
+            if(b.getAttribute("data-mcn-ic")){ return; }
+            var first = b.firstChild && b.firstChild.nodeType === 3 ? b.firstChild.nodeValue : "";
+            var cls = badgeIcon(first);
+            if(cls){
+                b.setAttribute("data-mcn-ic", "1");
+                b.firstChild.nodeValue = stripEmoji(first);
+                addIcon(b, cls, true);
+            }
+        });
+    }
+    if(document.readyState !== "loading"){ decorate(); }
+    else { document.addEventListener("DOMContentLoaded", decorate); }
 })();
 </script>
 
